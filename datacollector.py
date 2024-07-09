@@ -1,6 +1,6 @@
 """
 Contains the DataCollector class, which implements functions related to how data
-is retrieved from the Deriv API and sent to a SQLite database.
+is retrieved from the Deriv API and sent to a local database.
 """
 
 import os
@@ -50,7 +50,7 @@ class DataCollector:
 
     async def collect_data(self):
         """
-        Specifies the paramaters of the data to be collected and sends this data to SQLite database.
+        Specifies the paramaters of the data to be collected and sends this data to local database.
         """
         try:
             lastEpoch = await self.databasemanager.last_epoch()

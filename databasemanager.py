@@ -1,5 +1,5 @@
 """
-Contains the DatabaseManager class, which implements the functions related to a SqLite3 database.
+Contains the DatabaseManager class, which implements the functions related to a local database.
 """
 from aiosqlite import connect
 import asyncio
@@ -38,7 +38,7 @@ class DatabaseManager:
 
     async def insert_data(self, data):
         """
-        Inserts data from a zip object into a SQLite3 database. Each tuple in the zip object
+        Inserts data from a zip object into a local database. Each tuple in the zip object
         corresponds to a row in the table.
 
         :param data: zip object containing forex data
@@ -54,7 +54,7 @@ class DatabaseManager:
 
     async def last_epoch(self):
         """
-        Retrieves the latest value in the epoch column of an SQLite database.
+        Retrieves the latest value in the epoch column of the database.
         :return: integer representing the latest epoch in the database
         """
 
