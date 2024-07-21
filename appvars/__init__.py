@@ -1,0 +1,2 @@
+running = True
+downloading = False

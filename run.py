@@ -7,21 +7,10 @@ import asyncio
 from databasemanager import DatabaseManager
 from datacollector import DataCollector
 
+if __name__ == "__main__":
 
-async def main():
-    """ Initializes the DataCollector, sets up the connection to the Deriv API,
-    and starts collecting data.
-    """
-
-    databaseManager = DatabaseManager("forex-data.db")
-    # await databaseManager.create_table()
-
-    # Provide the App ID
-    appid = os.environ["DERIV_APP_ID"]
-
-    dataCollector = DataCollector(databaseManager, appid)
-    await dataCollector.create_api_connection()
-    await dataCollector.collect_data()
+    async def main():
 
 
-asyncio.run(main())
+
+    asyncio.run(main())

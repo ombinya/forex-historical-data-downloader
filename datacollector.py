@@ -9,6 +9,7 @@ import asyncio
 import websockets
 from deriv_api import DerivAPI
 from databasemanager import DatabaseManager
+import appvars
 
 
 class DataCollector:
@@ -29,7 +30,7 @@ class DataCollector:
 
         self.apiconnection = DerivAPI(connection=connection)
 
-    async def ticks_history(self, startepoch):
+    async def ticks_history(self, startepoch, pair):
         """
         Retrieves Forex data for the specified currency pair, from the start epoch to the end epoch.
 
@@ -38,9 +39,10 @@ class DataCollector:
         """
 
         endepoch = startepoch + self.duration - 1
+        commodity = "frx" + pair
         tickshistory = await self.apiconnection.ticks_history(
             {
-                "ticks_history": "frxEURUSD",
+                "ticks_history": commodity,
                 "end": endepoch,
                 "start": startepoch
             }
@@ -48,37 +50,41 @@ class DataCollector:
 
         return tickshistory
 
-    async def collect_data(self):
+    async def collect_data(self, pair, startdatetime, enddatetime):
         """
         Specifies the paramaters of the data to be collected and sends this data to local database.
         """
-        try:
-            lastEpoch = await self.databasemanager.last_epoch()
-            mainstartepoch = lastEpoch + 1
-        except:
-            mainstartepoch = int(datetime(2022, 1, 1, 0, 0).timestamp())
 
-        while datetime.fromtimestamp(mainstartepoch).year < 2024:
+        print("Initializing data collection...")
+
+        mainstartepoch = int(startdatetime.timestamp())
+        finalendepoch = int(enddatetime.timestamp())
+
+        while appvars.running == True and mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
-            tasks = [self.ticks_history(startepoch) for startepoch in startepochs]
+            tasks = [self.ticks_history(startepoch, pair) for startepoch in startepochs]
             results = await asyncio.gather(*tasks)
 
             times = []
             prices = []
             for result in results:
-                times.extend(result["history"]["times"])
-                prices.extend(result["history"]["prices"])
+                currenttimes = result["history"]["times"]
+                currentprices = result["history"]["prices"]
+                if len(currenttimes) > 0 and currenttimes[-1] > finalendepoch:
+                    currenttimes = [epoch for epoch in currenttimes if epoch <= finalendepoch]
+                    currentprices = currentprices[ : len(currenttimes)]
+
+                times.extend(currenttimes)
+                prices.extend(currentprices)
 
             data = zip(times, prices)
 
-            endepoch = mainstartepoch + (self.duration * self.processes) - 1
-            print("Inserting data for",
-                  datetime.fromtimestamp(mainstartepoch), "-",
-                  datetime.fromtimestamp(endepoch), end=" ")
             await self.databasemanager.insert_data(data)
-            print("DONE")
 
             mainstartepoch = mainstartepoch + (self.duration * self.processes)
+
+        appvars.downloading = False
+        print("Download Complete!")
 
 
 if __name__ == "__main__":
@@ -90,7 +96,6 @@ if __name__ == "__main__":
         await dataCollector.create_api_connection()
 
         await dataCollector.collect_data()
-
 
     startTime = datetime.now()
     asyncio.run(main())
