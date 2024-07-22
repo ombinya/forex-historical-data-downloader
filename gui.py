@@ -19,7 +19,12 @@ class BigFrame(ctk.CTkFrame):
         self.pairoptionsmenulabel.grid(row=row, column=0, padx=10, pady=(10, 0), sticky="w")
         row += 1
 
-        currencypairs = ["EURUSD", "EURCHF"]
+        currencypairs = ["AUDJPY", "AUDUSD", "EURAUD", "EURCAD", "EURCHF",
+                         "EURGBP", "EURJPY", "EURUSD", "GBPAUD", "GBPJPY",
+                         "GBPUSD", "USDCAD", "USDCHF", "USDJPY", "AUDCAD",
+                         "AUDCHF", "AUDNZD", "EURNZD", "GBPCAD", "GBPCHF",
+                         "GBPNOK", "GBPNZD", "NZDJPY", "NZDUSD", "USDMXN",
+                         "USDNOK", "USDPLN", "USDSEK"]
         self.pairoptionsmenu = ctk.CTkOptionMenu(
             self, values=currencypairs, corner_radius=0, width=110)
         self.pairoptionsmenu.grid(
