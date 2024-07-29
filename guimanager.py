@@ -12,25 +12,10 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.thread = None
 
-    def set_thread(self, thread, dataCollector):
+    def set_thread(self, thread):
         self.thread = thread
 
     def closeEvent(self, event):
-        # if self.thread:
-        #     try:
-        #         if self.thread.isRunning():
-        #             print("Thread is running, attempting to quit and wait")
-        #             try:
-        #                 self.thread.quit()
-        #                 self.thread.wait()
-        #             except Exception as e1:
-        #                 print(f"Exception during thread quit/wait: {e1}")
-        #         else:
-        #             print("Thread is not running")
-        #     except Exception as e2:
-        #         print(f"Exception while checking if thread is running: {e2.__class__.__name__}: {e2}")
-        # else:
-        #     print("No thread to quit")
         event.accept()
 
 
@@ -44,14 +29,13 @@ class GUIManager(Ui_MainWindow):
         self.ui.DOWNLOAD_BUTTON.clicked.connect(self.download_init)
 
     def set_defaults(self):
-        self.ui.TRADE_ITEMS.addItems(appvars.tradeitems)
+        self.ui.TRADE_ITEMS.addItems(appvars.tradeitemsdisplay)
         self.ui.START_DATE.setDate(date.today() - timedelta(days=1))
         self.ui.END_DATE.setDate(date.today())
 
     def download_init(self):
         self.ui.DOWNLOAD_BUTTON.setEnabled(False)
-
-        self.tradeitem = self.ui.TRADE_ITEMS.currentText()
+        self.tradeitem = appvars.assetsdict[self.ui.TRADE_ITEMS.currentText()]
 
         startdate = self.ui.START_DATE.date().toPyDate()
         starttime = self.ui.START_TIME.time().toPyTime()
@@ -66,31 +50,15 @@ class GUIManager(Ui_MainWindow):
         self.dataCollector.moveToThread(self.thread)
 
         self.thread.started.connect(self.dataCollector.run)
-        print("Quitting self.thread")
         self.dataCollector.finished.connect(self.thread.quit)
-        print("Will delete datacollector later")
         self.dataCollector.finished.connect(self.dataCollector.deleteLater)
-        print("I'll delete later")
         self.thread.finished.connect(self.thread.deleteLater)
-        print("About to activate the button")
         self.thread.finished.connect(self.on_thread_finished)
-        print("Button activated")
-        self.MainWindow.set_thread(self.thread, self.dataCollector)
+        self.MainWindow.set_thread(self.thread)
         self.thread.start()
 
     def on_thread_finished(self):
-        print("Inside on_thread_finished function")
         self.ui.DOWNLOAD_BUTTON.setEnabled(True)
-
-        # print("1")
-        # if self.thread:
-        #     print("Thread exists")
-        #     if self.thread.isRunning():
-        #         print("Quitting")
-        #         self.thread.quit()
-        #         print("waiting")
-        #         self.thread.wait()
-        # print("2")
 
     def get_date_time(self, datestring, timeitems):
         datetimeformat = "%Y-%m-%d %H:%M:%S"
@@ -105,7 +73,6 @@ class GUIManager(Ui_MainWindow):
         self.MainWindow.show()
 
     def close_gui(self):
-        # self.exit()
         sys.exit(self.app.exec())
 
 

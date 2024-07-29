@@ -37,3 +37,8 @@ tradeitemsdisplay = [
     'BTC/USD', 'ETH/USD'
 ]
 
+assetsdict = dict(zip(tradeitemsdisplay, tradeitems))
+
+if __name__ == "__main__":
+    print(assetsdict)
+

@@ -13,7 +13,6 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class DataCollector(QObject):
     finished = pyqtSignal()
-    # progress = pyqtSignal(str)
 
     def __init__(self, tradeitem, startdatetime, enddatetime):
         super().__init__()
@@ -27,20 +26,8 @@ class DataCollector(QObject):
         self.loop = asyncio.new_event_loop()
 
     def run(self):
-        # asyncio.set_event_loop(self.loop)
-        # try:
-        #     self.loop.run_until_complete(self.collect_data())
-        # finally:
-        #     self.loop.stop()
-        #     self.loop.close()
-        #     self.finished.emit()
-        # asyncio.set_event_loop(self.loop)
-        # self.loop.run_until_complete(self.collect_data())
-        # self.finished.emit()
-
         asyncio.run(self.collect_data())
         self.finished.emit()
-
 
     async def create_api_connection(self):
         """
@@ -53,7 +40,6 @@ class DataCollector(QObject):
 
         self.apiconnection = DerivAPI(connection=connection)
 
-
     async def get_asset_index(self):
         try:
             assets = await self.apiconnection.asset_index({"asset_index": 1})
@@ -61,7 +47,6 @@ class DataCollector(QObject):
         except Exception as e:
             print(type(e).__name__, "----- Trouble getting asset index")
             print("Error message ->", e)
-
 
     async def ticks_history(self, startepoch):
         """
@@ -84,26 +69,27 @@ class DataCollector(QObject):
 
     async def collect_data(self):
         """
-        Specifies the paramaters of the data to be collected and sends this data to local database.
+        Specifies the paramaters of the data to be collected and sends this data to
+        local database.
         """
 
         print("Establishing connection to DERIV...")
         await self.create_api_connection()
         print("Connected successfully!")
-
         datetimeformat = "%Y_%m_%d_%H_%M_%S"
-
         print("Establishing connection to database...")
         currentdatetime = datetime.now()
         datetimestring = currentdatetime.strftime(datetimeformat)
         dbfilename = self.tradeitem + "_" + datetimestring + ".db"
         databasemanager = DatabaseManager(dbfilename, self.tradeitem)
         await databasemanager.create_table()
-        print("Connection successful!")
+
+        print("Connected successful!")
 
         mainstartepoch = int(self.startdatetime.timestamp())
         finalendepoch = int(self.enddatetime.timestamp())
 
+        print("Getting ready to download data for {}".format(self.tradeitem))
         while mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
             tasks = [self.ticks_history(startepoch) for startepoch in startepochs]
@@ -111,6 +97,7 @@ class DataCollector(QObject):
 
             times = []
             prices = []
+
             for result in results:
                 currenttimes = result["history"]["times"]
                 currentprices = result["history"]["prices"]
@@ -121,23 +108,17 @@ class DataCollector(QObject):
                 times.extend(currenttimes)
                 prices.extend(currentprices)
 
+            # print(len(times))
             try:
                 data = zip(times, prices)
-                print("Data has been zipped")
             except Exception as e:
                 print(f"Exception during zipping: {e}")
                 print("Chunk size", len(times))
 
             if len(times) > 0:
-                print(
-                    "Inserting data for", datetime.fromtimestamp(times[0]),
-                    " - ", datetime.fromtimestamp(times[-1]))
                 await databasemanager.insert_data(data)
-                print("Data insertion successful")
 
             mainstartepoch = mainstartepoch + (self.duration * self.processes)
-
-        print("Download Complete!")
 
 
 if __name__ == "__main__":
@@ -148,10 +129,11 @@ if __name__ == "__main__":
 
         tradeitems = []
         tradeitemsdisplay = []
+
         for asset in assets["asset_index"]:
-            # print(asset)
             tradeitems.append(asset[0])
             tradeitemsdisplay.append(asset[1])
+
         print(tradeitemsdisplay)
 
     asyncio.run(main())
