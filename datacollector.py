@@ -10,6 +10,9 @@ from deriv_api import DerivAPI
 from databasemanager import DatabaseManager
 import appvars
 from PyQt5.QtCore import QObject, pyqtSignal
+from dotenv import load_dotenv
+import os
+
 
 class DataCollector(QObject):
     finished = pyqtSignal()
@@ -34,8 +37,13 @@ class DataCollector(QObject):
         Creates a connection to the DERIV API.
         """
 
+        load_dotenv()
+
+        derivappid = os.environ.get("DERIV_APP_ID")
+        print("APP ID:", derivappid)
+
         connection = await websockets.connect(
-            'wss://ws.derivws.com/websockets/v3?app_id={}'.format(appvars.derivappid)
+            'wss://ws.derivws.com/websockets/v3?app_id={}'.format(derivappid)
         )
 
         self.apiconnection = DerivAPI(connection=connection)

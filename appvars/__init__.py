@@ -1,8 +1,6 @@
 import os
 import asyncio
 
-derivappid = os.environ["DERIV_APP_ID"]
-
 running = True
 downloading = False
 

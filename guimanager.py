@@ -6,7 +6,6 @@ import appvars
 from datetime import datetime, date, timedelta
 from datacollector import DataCollector
 
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
