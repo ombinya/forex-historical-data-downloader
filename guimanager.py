@@ -1,10 +1,10 @@
 from qtgui import Ui_MainWindow
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThread, QDate
+from PyQt5.QtCore import QThread
 import sys
-import appvars
 from datetime import datetime, date, timedelta
 from datacollector import DataCollector
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -19,7 +19,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class GUIManager(Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, assets):
+        self.assets = assets
+
         self.app = QtWidgets.QApplication(sys.argv)
         self.MainWindow = MainWindow()
         self.ui = Ui_MainWindow()
@@ -28,13 +30,13 @@ class GUIManager(Ui_MainWindow):
         self.ui.DOWNLOAD_BUTTON.clicked.connect(self.download_init)
 
     def set_defaults(self):
-        self.ui.TRADE_ITEMS.addItems(appvars.tradeitemsdisplay)
+        self.ui.TRADE_ITEMS.addItems(self.assets.keys())
         self.ui.START_DATE.setDate(date.today() - timedelta(days=1))
         self.ui.END_DATE.setDate(date.today())
 
     def download_init(self):
         self.ui.DOWNLOAD_BUTTON.setEnabled(False)
-        self.tradeitem = appvars.assetsdict[self.ui.TRADE_ITEMS.currentText()]
+        self.assetid = self.assets[self.ui.TRADE_ITEMS.currentText()]
 
         startdate = self.ui.START_DATE.date().toPyDate()
         starttime = self.ui.START_TIME.time().toPyTime()
@@ -45,7 +47,7 @@ class GUIManager(Ui_MainWindow):
         self.enddatetime = datetime.combine(enddate, endtime)
 
         self.thread = QThread()
-        self.dataCollector = DataCollector(self.tradeitem, self.startdatetime, self.enddatetime)
+        self.dataCollector = DataCollector(self.assetid, self.startdatetime, self.enddatetime)
         self.dataCollector.moveToThread(self.thread)
 
         self.thread.started.connect(self.dataCollector.run)

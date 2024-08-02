@@ -1,9 +1,3 @@
-import os
-import asyncio
-
-running = True
-downloading = False
-
 tradeitems = [
     'frxAUDJPY', 'frxAUDUSD', 'frxEURAUD', 'frxEURCAD', 'frxEURCHF', 'frxEURGBP', 'frxEURJPY',
     'frxEURUSD', 'frxGBPAUD', 'frxGBPJPY', 'frxGBPUSD', 'frxUSDCAD', 'frxUSDCHF', 'frxUSDJPY',
@@ -38,5 +32,6 @@ tradeitemsdisplay = [
 assetsdict = dict(zip(tradeitemsdisplay, tradeitems))
 
 if __name__ == "__main__":
-    print(assetsdict)
+    for asset in assetsdict.keys():
+        print(asset)
 
