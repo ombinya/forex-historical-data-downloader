@@ -30,13 +30,13 @@ class GUIManager(Ui_MainWindow):
         self.ui.DOWNLOAD_BUTTON.clicked.connect(self.download_init)
 
     def set_defaults(self):
-        self.ui.TRADE_ITEMS.addItems(self.assets.keys())
+        self.ui.ASSET_OPTIONS.addItems(self.assets.keys())
         self.ui.START_DATE.setDate(date.today() - timedelta(days=1))
         self.ui.END_DATE.setDate(date.today())
 
     def download_init(self):
         self.ui.DOWNLOAD_BUTTON.setEnabled(False)
-        self.assetid = self.assets[self.ui.TRADE_ITEMS.currentText()]
+        self.assetid = self.assets[self.ui.ASSET_OPTIONS.currentText()]
 
         startdate = self.ui.START_DATE.date().toPyDate()
         starttime = self.ui.START_TIME.time().toPyTime()
