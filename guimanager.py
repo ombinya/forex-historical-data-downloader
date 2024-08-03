@@ -17,6 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         event.accept()
 
+
 class GUIManager(Ui_MainWindow):
     def __init__(self, assets):
         self.assets = assets
@@ -28,18 +29,25 @@ class GUIManager(Ui_MainWindow):
 
         self.ui.DOWNLOAD_BUTTON.clicked.connect(self.download_init)
 
+        try:
+            self.downloadprogressloglayout = QtWidgets.QVBoxLayout(self.ui.scrollAreaWidgetContents)
+            self.downloadprogressloglayout.setContentsMargins(0, 0, 0, 0)  # Set margins to zero
+            self.downloadprogressloglayout.setSpacing(0)
+            self.ui.scrollAreaWidgetContents.setLayout(self.downloadprogressloglayout)
+        except Exception as e:
+            print(e)
+        
+        self.loglabels = []
+
     def set_defaults(self):
         self.ui.ASSET_OPTIONS.addItems(self.assets.keys())
         self.ui.START_DATE.setDate(date.today() - timedelta(days=1))
         self.ui.END_DATE.setDate(date.today())
 
-        self.scroll_layout = QtWidgets.QVBoxLayout(self.ui.scrollAreaWidgetContents)
-        self.scroll_layout.setContentsMargins(0, 0, 0, 0)  # Set margins to zero
-        self.scroll_layout.setSpacing(0)
-        self.ui.scrollAreaWidgetContents.setLayout(self.scroll_layout)
-
     def download_init(self):
         self.ui.DOWNLOAD_BUTTON.setEnabled(False)
+        self.clear_log()
+
         self.assetid = self.assets[self.ui.ASSET_OPTIONS.currentText()]
 
         startdate = self.ui.START_DATE.date().toPyDate()
@@ -58,13 +66,22 @@ class GUIManager(Ui_MainWindow):
 
         self.dataCollector.connectedtoapi.connect(self.on_api_connection)
         self.dataCollector.createddb.connect(self.on_db_creation)
-
+        self.dataCollector.senttodb.connect(self.on_sent_to_db)
+        self.dataCollector.downloadedsuccessfully.connect(self.on_downloaded_successfully)
         self.dataCollector.finished.connect(self.thread.quit)
         self.dataCollector.finished.connect(self.dataCollector.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.on_thread_finished)
         self.MainWindow.set_thread(self.thread)
         self.thread.start()
+
+    def clear_log(self):
+        for label in self.loglabels:
+            try:
+                self.downloadprogressloglayout.removeWidget(label)
+                label.deleteLater()
+            except Exception as e:
+                print("Error while clearing log: ", e)
 
     def on_api_connection(self, connected):
         if connected:
@@ -78,7 +95,7 @@ class GUIManager(Ui_MainWindow):
 
     def on_db_creation(self, created):
         if created:
-            message = "Database created successfully.\nInitializing download..."
+            message = "Database created successfully."
             messagetype = "primary"
         else:
             message = "Failed to create database."
@@ -86,10 +103,21 @@ class GUIManager(Ui_MainWindow):
 
         self.add_to_log(message, messagetype)
 
+    def on_sent_to_db(self, percentagedownloaded):
+        if "Downloading..." in self.loglabels[-1].text():
+            label = self.loglabels.pop()
+            label.deleteLater()
+
+        self.add_to_log("Downloading... {}%".format(percentagedownloaded), "primary")
+
+    def on_downloaded_successfully(self):
+        self.clear_log()
+        self.add_to_log("Download complete!", "primary")
+
     def on_thread_finished(self):
         self.ui.DOWNLOAD_BUTTON.setEnabled(True)
 
-    def add_to_log(self, message, messagetype):
+    def add_to_log(self, message, messagetype=None):
         label = QtWidgets.QLabel(message)
         # label.setStyleSheet(
         #     "color: red;"
@@ -104,7 +132,8 @@ class GUIManager(Ui_MainWindow):
         except Exception as e:
             print(e)
 
-        self.scroll_layout.addWidget(label)
+        self.downloadprogressloglayout.addWidget(label)
+        self.loglabels.append(label)
 
     def get_date_time(self, datestring, timeitems):
         datetimeformat = "%Y-%m-%d %H:%M:%S"

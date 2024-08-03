@@ -17,7 +17,8 @@ class DataCollector(QObject):
     finished = pyqtSignal()
     connectedtoapi = pyqtSignal(bool)
     createddb = pyqtSignal(bool)
-    downloaded = pyqtSignal(bool)
+    senttodb = pyqtSignal(int)
+    downloadedsuccessfully = pyqtSignal()
 
     def __init__(self, asset, startdatetime, enddatetime):
         super().__init__()
@@ -101,7 +102,8 @@ class DataCollector(QObject):
             self.createddb.emit(False)
             return
 
-        mainstartepoch = int(self.startdatetime.timestamp())
+        initialstartepoch = int(self.startdatetime.timestamp())
+        mainstartepoch = initialstartepoch
         finalendepoch = int(self.enddatetime.timestamp())
 
         while mainstartepoch < finalendepoch:
@@ -130,8 +132,14 @@ class DataCollector(QObject):
 
             if len(times) > 0:
                 await databasemanager.insert_data(data)
+                percentagedownloaded = ((times[-1] - initialstartepoch) / \
+                             (finalendepoch - initialstartepoch)) * 100
+
+                self.senttodb.emit(int(percentagedownloaded))
 
             mainstartepoch = mainstartepoch + (self.duration * self.processes)
+
+        self.downloadedsuccessfully.emit()
 
 
 if __name__ == "__main__":
