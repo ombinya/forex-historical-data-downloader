@@ -19,6 +19,7 @@ class DataCollector(QObject):
     createddb = pyqtSignal(bool)
     senttodb = pyqtSignal(int)
     downloadedsuccessfully = pyqtSignal()
+    gotinvalidtimerange = pyqtSignal()
 
     def __init__(self, asset, startdatetime, enddatetime):
         super().__init__()
@@ -82,6 +83,13 @@ class DataCollector(QObject):
         local database.
         """
 
+        initialstartepoch = int(self.startdatetime.timestamp())
+        finalendepoch = int(self.enddatetime.timestamp())
+
+        if finalendepoch <= initialstartepoch:
+            self.gotinvalidtimerange.emit()
+            return
+
         try:
             await self.create_api_connection()
             self.connectedtoapi.emit(True)
@@ -102,9 +110,7 @@ class DataCollector(QObject):
             self.createddb.emit(False)
             return
 
-        initialstartepoch = int(self.startdatetime.timestamp())
         mainstartepoch = initialstartepoch
-        finalendepoch = int(self.enddatetime.timestamp())
 
         while mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]

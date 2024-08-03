@@ -68,6 +68,7 @@ class GUIManager(Ui_MainWindow):
         self.dataCollector.createddb.connect(self.on_db_creation)
         self.dataCollector.senttodb.connect(self.on_sent_to_db)
         self.dataCollector.downloadedsuccessfully.connect(self.on_downloaded_successfully)
+        self.dataCollector.gotinvalidtimerange.connect(self.on_got_invalid_time_range)
         self.dataCollector.finished.connect(self.thread.quit)
         self.dataCollector.finished.connect(self.dataCollector.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -102,6 +103,10 @@ class GUIManager(Ui_MainWindow):
             messagetype = "danger"
 
         self.add_to_log(message, messagetype)
+
+    def on_got_invalid_time_range(self):
+        self.clear_log()
+        self.add_to_log("Error: Invalid time range", "danger")
 
     def on_sent_to_db(self, percentagedownloaded):
         if "Downloading..." in self.loglabels[-1].text():
