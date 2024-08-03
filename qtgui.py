@@ -14,7 +14,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(243, 384)
+        MainWindow.setEnabled(True)
+        MainWindow.resize(638, 266)
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -25,7 +26,7 @@ class Ui_MainWindow(object):
         self.label.setGeometry(QtCore.QRect(20, 40, 61, 16))
         self.label.setObjectName("label")
         self.DOWNLOAD_BUTTON = QtWidgets.QPushButton(self.centralwidget)
-        self.DOWNLOAD_BUTTON.setGeometry(QtCore.QRect(20, 220, 201, 31))
+        self.DOWNLOAD_BUTTON.setGeometry(QtCore.QRect(270, 170, 131, 31))
         self.DOWNLOAD_BUTTON.setStyleSheet("#DOWNLOAD_BUTTON {\n"
 "    background-color: rgb(95, 75, 140);\n"
 "    color: rgb(255, 255, 255);\n"
@@ -56,9 +57,17 @@ class Ui_MainWindow(object):
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(20, 160, 111, 16))
         self.label_3.setObjectName("label_3")
+        self.DOWNLOAD_PROGRESS_LOG = QtWidgets.QScrollArea(self.centralwidget)
+        self.DOWNLOAD_PROGRESS_LOG.setGeometry(QtCore.QRect(270, 60, 351, 101))
+        self.DOWNLOAD_PROGRESS_LOG.setWidgetResizable(True)
+        self.DOWNLOAD_PROGRESS_LOG.setObjectName("DOWNLOAD_PROGRESS_LOG")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 349, 99))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.DOWNLOAD_PROGRESS_LOG.setWidget(self.scrollAreaWidgetContents)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 243, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 638, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)

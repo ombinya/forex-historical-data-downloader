@@ -15,11 +15,14 @@ import os
 
 class DataCollector(QObject):
     finished = pyqtSignal()
+    connectedtoapi = pyqtSignal(bool)
+    createddb = pyqtSignal(bool)
+    downloaded = pyqtSignal(bool)
 
-    def __init__(self, tradeitem, startdatetime, enddatetime):
+    def __init__(self, asset, startdatetime, enddatetime):
         super().__init__()
 
-        self.tradeitem = tradeitem
+        self.asset = asset
         self.startdatetime = startdatetime
         self.enddatetime = enddatetime
 
@@ -55,7 +58,7 @@ class DataCollector(QObject):
 
     async def ticks_history(self, startepoch):
         """
-        Retrieves historical tick data for a given trade item, from the start epoch to the end epoch.
+        Retrieves historical tick data for a given asset, from the start epoch to the end epoch.
 
         :param startepoch: the start epoch
         :return: dictionary object containing the retrieved forex data
@@ -64,7 +67,7 @@ class DataCollector(QObject):
         endepoch = startepoch + self.duration - 1
         tickshistory = await self.apiconnection.ticks_history(
             {
-                "ticks_history": self.tradeitem,
+                "ticks_history": self.asset,
                 "end": endepoch,
                 "start": startepoch
             }
@@ -78,23 +81,29 @@ class DataCollector(QObject):
         local database.
         """
 
-        print("Establishing connection to DERIV...")
-        await self.create_api_connection()
-        print("Connected successfully!")
+        try:
+            await self.create_api_connection()
+            self.connectedtoapi.emit(True)
+        except:
+            self.connectedtoapi.emit(False)
+            return
+
         datetimeformat = "%Y_%m_%d_%H_%M_%S"
-        print("Establishing connection to database...")
         currentdatetime = datetime.now()
         datetimestring = currentdatetime.strftime(datetimeformat)
-        dbfilename = self.tradeitem + "_" + datetimestring + ".db"
-        databasemanager = DatabaseManager(dbfilename, self.tradeitem)
-        await databasemanager.create_table()
+        dbfilename = self.asset + "_" + datetimestring + ".db"
 
-        print("Connected successful!")
+        try:
+            databasemanager = DatabaseManager(dbfilename, self.asset)
+            await databasemanager.create_table()
+            self.createddb.emit(True)
+        except:
+            self.createddb.emit(False)
+            return
 
         mainstartepoch = int(self.startdatetime.timestamp())
         finalendepoch = int(self.enddatetime.timestamp())
 
-        print("Getting ready to download data for {}".format(self.tradeitem))
         while mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
             tasks = [self.ticks_history(startepoch) for startepoch in startepochs]
@@ -113,7 +122,6 @@ class DataCollector(QObject):
                 times.extend(currenttimes)
                 prices.extend(currentprices)
 
-            # print(len(times))
             try:
                 data = zip(times, prices)
             except Exception as e:
