@@ -104,9 +104,10 @@ class GUIManager(Ui_MainWindow):
 
         self.add_to_log(message, messagetype)
 
-    def on_got_invalid_time_range(self):
+    def on_got_invalid_time_range(self, message):
         self.clear_log()
         self.add_to_log("Error: Invalid time range", "danger")
+        self.add_to_log("Reason: {}".format(message), "danger")
 
     def on_sent_to_db(self, percentagedownloaded):
         if "Downloading..." in self.loglabels[-1].text():

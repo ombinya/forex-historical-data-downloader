@@ -17,9 +17,7 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"># DOWNLOAD_PROGRESS_LOG QLabel {
-	color: red;
-}</string>
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QComboBox" name="ASSET_OPTIONS">
@@ -174,19 +172,6 @@
        <height>99</height>
       </rect>
      </property>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>47</width>
-        <height>13</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Some Text</string>
-      </property>
-     </widget>
     </widget>
    </widget>
   </widget>

@@ -19,7 +19,7 @@ class DataCollector(QObject):
     createddb = pyqtSignal(bool)
     senttodb = pyqtSignal(int)
     downloadedsuccessfully = pyqtSignal()
-    gotinvalidtimerange = pyqtSignal()
+    gotinvalidtimerange = pyqtSignal(str)
 
     def __init__(self, asset, startdatetime, enddatetime):
         super().__init__()
@@ -87,7 +87,10 @@ class DataCollector(QObject):
         finalendepoch = int(self.enddatetime.timestamp())
 
         if finalendepoch <= initialstartepoch:
-            self.gotinvalidtimerange.emit()
+            self.gotinvalidtimerange.emit("End date-time must be later than inital date-time.")
+            return
+        elif finalendepoch - initialstartepoch > 366 * 24 * 60 * 60:
+            self.gotinvalidtimerange.emit("You can only download data of maximum range of one year at a time.")
             return
 
         try:
