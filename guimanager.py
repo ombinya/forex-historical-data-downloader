@@ -125,18 +125,11 @@ class GUIManager(Ui_MainWindow):
 
     def add_to_log(self, message, messagetype=None):
         label = QtWidgets.QLabel(message)
-        # label.setStyleSheet(
-        #     "color: red;"
-        #     "margin: 0;"
-        #     "min-height: 0;"
-        #     "min-width: 0;"
-        #     "padding: 0;"
-        #     "border: 2px solid black;")
-        try:
-            label.setContentsMargins(0, 0, 0, 0)  # Set margins to zero
-            # label.setSpacing(0)
-        except Exception as e:
-            print(e)
+        label.setContentsMargins(0, 0, 0, 0)
+        if messagetype == "danger":
+            label.setStyleSheet("color: rgb(255, 0, 0);")
+        elif messagetype == "primary":
+            label.setStyleSheet("color: rgb(230, 150, 140);")
 
         self.downloadprogressloglayout.addWidget(label)
         self.loglabels.append(label)
