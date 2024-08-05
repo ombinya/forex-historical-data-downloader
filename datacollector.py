@@ -79,7 +79,7 @@ class DataCollector(QObject):
 
     async def collect_data(self):
         """
-        Specifies the paramaters of the data to be collected and sends this data to
+        Specifies the parameters of the data to be collected and sends this data to
         local database.
         """
 
@@ -136,7 +136,7 @@ class DataCollector(QObject):
             try:
                 data = zip(times, prices)
             except Exception as e:
-                print(f"Exception during zipping: {e}")
+                print("Exception during zipping: {}".format(e))
                 print("Chunk size", len(times))
 
             if len(times) > 0:
