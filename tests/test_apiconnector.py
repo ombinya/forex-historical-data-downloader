@@ -18,6 +18,7 @@ class TestAPIConnector(unittest.IsolatedAsyncioTestCase):
         await self.apiconnector.create_api_connection()
         ticksHistory = await self.apiconnector.ticks_history(startEpoch, duration, "frxAUDJPY")
         self.assertLessEqual(int(ticksHistory["echo_req"]["end"]), startEpoch + duration)
+        self.assertGreaterEqual(int(ticksHistory["echo_req"]["start"]), startEpoch)
 
 if __name__ == "__main__":
     unittest.main()
