@@ -5,12 +5,9 @@ is retrieved from the Deriv API and sent to a local database.
 
 from datetime import datetime
 import asyncio
-import websockets
-from deriv_api import DerivAPI
 from databasemanager import DatabaseManager
 from PyQt5.QtCore import QObject, pyqtSignal
-from dotenv import load_dotenv
-import os
+from apiconnector import APIConnector
 
 
 class DataCollector(QObject):
@@ -28,50 +25,15 @@ class DataCollector(QObject):
         self.startdatetime = startdatetime
         self.enddatetime = enddatetime
 
-        self.duration = 3600  # Number of seconds in an hour
+        self.duration = 3600
         self.processes = 12
         self.loop = asyncio.new_event_loop()
+
+        self.apiconnector = APIConnector()
 
     def run(self):
         asyncio.run(self.collect_data())
         self.finished.emit()
-
-    async def create_api_connection(self):
-        """
-        Creates a connection to the DERIV API.
-        """
-
-        load_dotenv()
-        derivappid = os.environ.get("DERIV_APP_ID")
-
-        connection = await websockets.connect(
-            'wss://ws.derivws.com/websockets/v3?app_id={}'.format(derivappid)
-        )
-
-        self.apiconnection = DerivAPI(connection=connection)
-
-    # async def get_asset_index(self):
-    #     assets = await self.apiconnection.asset_index({"asset_index": 1})
-    #     return assets
-
-    async def ticks_history(self, startepoch):
-        """
-        Retrieves historical tick data for a given asset, from the start epoch to the end epoch.
-
-        :param startepoch: the start epoch
-        :return: dictionary object containing the retrieved forex data
-        """
-
-        endepoch = startepoch + self.duration - 1
-        tickshistory = await self.apiconnection.ticks_history(
-            {
-                "ticks_history": self.asset,
-                "end": endepoch,
-                "start": startepoch
-            }
-        )
-
-        return tickshistory
 
     async def collect_data(self):
         """
@@ -90,7 +52,7 @@ class DataCollector(QObject):
             return
 
         try:
-            await self.create_api_connection()
+            apiconnection = await self.apiconnector.create_api_connection()
             self.connectedtoapi.emit(True)
         except:
             self.connectedtoapi.emit(False)
@@ -113,7 +75,9 @@ class DataCollector(QObject):
 
         while mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
-            tasks = [self.ticks_history(startepoch) for startepoch in startepochs]
+            tasks = [self.apiconnector.ticks_history(startepoch, self.duration, self.asset, apiconnection) for
+                     startepoch in startepochs]
+
             results = await asyncio.gather(*tasks)
 
             times = []
