@@ -5,9 +5,9 @@ is retrieved from the Deriv API and sent to a local database.
 
 from datetime import datetime
 import asyncio
-from databasemanager import DatabaseManager
+from .databasemanager import DatabaseManager
 from PyQt5.QtCore import QObject, pyqtSignal
-from apiconnector import APIConnector
+from .apiconnector import APIConnector
 
 
 class DataCollector(QObject):

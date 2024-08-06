@@ -2,7 +2,7 @@
 This script serves as the entry point for running the main functionality of the program.
 """
 
-from guimanager import GUIManager
+from app.guimanager import GUIManager
 
 if __name__ == "__main__":
     assetIDs = [

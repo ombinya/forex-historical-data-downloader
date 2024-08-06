@@ -1,9 +1,9 @@
-from qtgui import Ui_MainWindow
+from .qtgui import Ui_MainWindow
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread
 import sys
 from datetime import datetime, date, timedelta
-from datacollector import DataCollector
+from .datacollector import DataCollector
 
 
 class MainWindow(QtWidgets.QMainWindow):
