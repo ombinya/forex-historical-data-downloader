@@ -3,7 +3,7 @@ from deriv_api import DerivAPI
 from dotenv import load_dotenv
 import os
 import asyncio
-
+import socket
 
 class APIConnector:
     def __init__(self):
@@ -48,5 +48,8 @@ class APIConnector:
 
 if __name__ == "__main__":
     apiConnector = APIConnector()
-    apiConnection = asyncio.run(apiConnector.create_api_connection())
-    print(type(apiConnection))
+    try:
+        apiConnection = asyncio.run(apiConnector.create_api_connection())
+        print(type(apiConnection))
+    except socket.gaierror:
+        print
