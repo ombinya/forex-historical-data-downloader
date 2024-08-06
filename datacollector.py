@@ -52,7 +52,7 @@ class DataCollector(QObject):
             return
 
         try:
-            apiconnection = await self.apiconnector.create_api_connection()
+            await self.apiconnector.create_api_connection()
             self.connectedtoapi.emit(True)
         except:
             self.connectedtoapi.emit(False)
@@ -75,7 +75,7 @@ class DataCollector(QObject):
 
         while mainstartepoch < finalendepoch:
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
-            tasks = [self.apiconnector.ticks_history(startepoch, self.duration, self.asset, apiconnection) for
+            tasks = [self.apiconnector.ticks_history(startepoch, self.duration, self.asset) for
                      startepoch in startepochs]
 
             results = await asyncio.gather(*tasks)
