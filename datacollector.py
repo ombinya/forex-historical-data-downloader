@@ -50,13 +50,9 @@ class DataCollector(QObject):
 
         self.apiconnection = DerivAPI(connection=connection)
 
-    async def get_asset_index(self):
-        try:
-            assets = await self.apiconnection.asset_index({"asset_index": 1})
-            return assets
-        except Exception as e:
-            print(type(e).__name__, "----- Trouble getting asset index")
-            print("Error message ->", e)
+    # async def get_asset_index(self):
+    #     assets = await self.apiconnection.asset_index({"asset_index": 1})
+    #     return assets
 
     async def ticks_history(self, startepoch):
         """
