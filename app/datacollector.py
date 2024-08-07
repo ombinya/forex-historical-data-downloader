@@ -29,7 +29,15 @@ class DataCollector(QObject):
         self.processes = 12
         self.loop = asyncio.new_event_loop()
 
-        self.apiconnector = APIConnector()
+        self.apiconnector = APIConnector()\
+
+        datetimeformat = "%Y_%m_%d_%H_%M_%S"
+        currentdatetime = datetime.now()
+        datetimestring = currentdatetime.strftime(datetimeformat)
+        dbfilename = self.asset + "_" + datetimestring + ".db"
+        self.databasemanager = DatabaseManager(dbfilename, self.asset)
+
+
 
     def run(self):
         asyncio.run(self.collect_data())
@@ -38,6 +46,14 @@ class DataCollector(QObject):
     async def connected_to_api(self):
         try:
             await self.apiconnector.create_api_connection()
+            return True
+        except:
+            return False
+
+    async def created_db(self):
+
+        try:
+            await self.databasemanager.create_table()
             return True
         except:
             return False
@@ -59,19 +75,7 @@ class DataCollector(QObject):
             return
 
         self.connectedtoapi.emit(await self.connected_to_api())
-
-        datetimeformat = "%Y_%m_%d_%H_%M_%S"
-        currentdatetime = datetime.now()
-        datetimestring = currentdatetime.strftime(datetimeformat)
-        dbfilename = self.asset + "_" + datetimestring + ".db"
-
-        try:
-            databasemanager = DatabaseManager(dbfilename, self.asset)
-            await databasemanager.create_table()
-            self.createddb.emit(True)
-        except:
-            self.createddb.emit(False)
-            return
+        self.createddb.emit(await self.created_db())
 
         mainstartepoch = initialstartepoch
 
@@ -102,7 +106,7 @@ class DataCollector(QObject):
                 print("Chunk size", len(times))
 
             if len(times) > 0:
-                await databasemanager.insert_data(data)
+                await self.databasemanager.insert_data(data)
                 percentagedownloaded = ((times[-1] - initialstartepoch) / \
                              (finalendepoch - initialstartepoch)) * 100
 
