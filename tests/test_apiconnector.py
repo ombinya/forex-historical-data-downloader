@@ -1,10 +1,10 @@
 import unittest
 from deriv_api import DerivAPI
-from ..apiconnector import APIConnector
+from ..app.apiconnector import APIConnector
 
 
 class TestAPIConnector(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         self.apiconnector = APIConnector()
 
     async def test_create_api_connection(self):

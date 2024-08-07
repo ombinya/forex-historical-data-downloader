@@ -53,24 +53,6 @@ class DatabaseManager:
 
         return downloads_path
 
-    async def last_epoch(self):
-        """
-        Retrieves the latest value in the epoch column of the database.
-        :return: integer representing the latest epoch in the database
-        """
-
-        async with connect(self.dbfilepath) as con:
-            selection = await con.execute("""
-                SELECT epoch
-                FROM {}
-                ORDER BY epoch DESC 
-                LIMIT 1
-            """.format(self.pair))
-
-            lastepoch = (await selection.fetchone())[0]
-
-            return lastepoch
-
 
 if __name__ == "__main__":
 
@@ -82,6 +64,5 @@ if __name__ == "__main__":
 
         dbm = DatabaseManager("test.db")
         await dbm.create_table()
-        print(dbm.last_epoch.__doc__)
 
     asyncio.run(main())
