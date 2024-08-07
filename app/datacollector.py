@@ -35,6 +35,13 @@ class DataCollector(QObject):
         asyncio.run(self.collect_data())
         self.finished.emit()
 
+    async def connected_to_api(self):
+        try:
+            await self.apiconnector.create_api_connection()
+            return True
+        except:
+            return False
+
     async def collect_data(self):
         """
         Specifies the parameters of the data to be collected and sends this data to
@@ -51,12 +58,7 @@ class DataCollector(QObject):
             self.gotinvalidtimerange.emit("You can only download data of maximum range of one year at a time.")
             return
 
-        try:
-            await self.apiconnector.create_api_connection()
-            self.connectedtoapi.emit(True)
-        except:
-            self.connectedtoapi.emit(False)
-            return
+        self.connectedtoapi.emit(await self.connected_to_api())
 
         datetimeformat = "%Y_%m_%d_%H_%M_%S"
         currentdatetime = datetime.now()
