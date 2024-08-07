@@ -36,6 +36,23 @@ class TestDatabaseManager(unittest.IsolatedAsyncioTestCase):
             tablenames = [table[0] for table in tables]
             self.assertTrue(self.asset in tablenames)
 
+    async def test_insert_data(self):
+
+        await self.databasemanager.create_table()
+        epochs = [1000 + i for i in range(10)]
+        prices = [1.5 + (i * 0.01) for i in range(10)]
+
+        data = zip(epochs, prices)
+        datacopy = zip(epochs, prices)
+
+        await self.databasemanager.insert_data(data)
+
+        async with connect(self.dbfilepath) as con:
+            async with con.execute("SELECT * FROM {}".format(self.asset)) as cursor:
+                entries = await cursor.fetchall()
+
+                self.assertEqual(list(datacopy), list(entries))
+
     def tearDown(self):
         # Delete database file after test
         os.remove(self.databasemanager.dbfilepath)
