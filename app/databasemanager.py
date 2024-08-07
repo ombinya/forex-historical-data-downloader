@@ -37,6 +37,8 @@ class DatabaseManager:
         :param data: zip object containing forex data
         """
 
+        assert type(data).__name__ == "zip", "Data must be zip object"
+
         async with connect(self.dbfilepath) as con:
             await con.executemany("""
                 INSERT INTO {}
