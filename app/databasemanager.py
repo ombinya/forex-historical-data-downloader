@@ -56,7 +56,6 @@ class DatabaseManager:
 
 if __name__ == "__main__":
 
-
     async def main():
         """
         Function to test the module.
