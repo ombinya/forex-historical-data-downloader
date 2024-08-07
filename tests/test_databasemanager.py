@@ -2,6 +2,7 @@ import unittest
 import sys
 import os
 from datetime import datetime
+from aiosqlite import connect
 
 # Add the parent directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -26,6 +27,14 @@ class TestDatabaseManager(unittest.IsolatedAsyncioTestCase):
 
         # Confirm that the database has been created successfully
         self.assertTrue(os.path.exists(self.dbfilepath))
+
+        # Confirm that the db table has been created successfully
+        async with connect(self.dbfilepath) as con:
+            async with con.execute("SELECT name FROM sqlite_master WHERE type='table'") as cursor:
+                tables = await cursor.fetchall()
+
+            tablenames = [table[0] for table in tables]
+            self.assertTrue(self.asset in tablenames)
 
     def tearDown(self):
         # Delete database file after test
