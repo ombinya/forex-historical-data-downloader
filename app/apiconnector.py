@@ -49,6 +49,7 @@ class APIConnector:
 if __name__ == "__main__":
     async def main():
         apiConnector = APIConnector()
+
         try:
             apiConnector.apiconnection = await apiConnector.create_api_connection()
         except socket.gaierror:

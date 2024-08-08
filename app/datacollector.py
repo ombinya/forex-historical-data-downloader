@@ -72,6 +72,7 @@ class DataCollector(QObject):
         finalendepoch = int(self.enddatetime.timestamp())
 
         invalidtimerangemessage = self.got_invalid_time_range(initialstartepoch, finalendepoch)
+
         if invalidtimerangemessage:
             self.gotinvalidtimerange.emit(invalidtimerangemessage)
             return
@@ -101,13 +102,8 @@ class DataCollector(QObject):
                 times.extend(currenttimes)
                 prices.extend(currentprices)
 
-            try:
-                data = zip(times, prices)
-            except Exception as e:
-                print("Exception during zipping: {}".format(e))
-                print("Chunk size", len(times))
-
             if len(times) > 0:
+                data = zip(times, prices)
                 await self.databasemanager.insert_data(data)
                 percentagedownloaded = ((times[-1] - initialstartepoch) / \
                              (finalendepoch - initialstartepoch)) * 100
