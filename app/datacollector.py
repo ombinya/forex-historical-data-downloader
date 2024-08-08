@@ -8,7 +8,7 @@ import asyncio
 from .databasemanager import DatabaseManager
 from PyQt5.QtCore import QObject, pyqtSignal
 from .apiconnector import APIConnector
-
+import socket
 
 class DataCollector(QObject):
     finished = pyqtSignal()
@@ -37,8 +37,6 @@ class DataCollector(QObject):
         dbfilename = self.asset + "_" + datetimestring + ".db"
         self.databasemanager = DatabaseManager(dbfilename, self.asset)
 
-
-
     def run(self):
         asyncio.run(self.collect_data())
         self.finished.emit()
@@ -47,7 +45,7 @@ class DataCollector(QObject):
         try:
             await self.apiconnector.create_api_connection()
             return True
-        except:
+        except socket.gaierror:
             return False
 
     async def created_db(self):
@@ -58,6 +56,12 @@ class DataCollector(QObject):
         except:
             return False
 
+    def got_invalid_time_range(self, a, b):
+        if b <= a:
+            return "End date-time must be later than inital date-time."
+        elif b - a > 366 * 24 * 60 * 60:
+            return "You can only download data of maximum range of one year at a time."
+
     async def collect_data(self):
         """
         Specifies the parameters of the data to be collected and sends this data to
@@ -67,11 +71,9 @@ class DataCollector(QObject):
         initialstartepoch = int(self.startdatetime.timestamp())
         finalendepoch = int(self.enddatetime.timestamp())
 
-        if finalendepoch <= initialstartepoch:
-            self.gotinvalidtimerange.emit("End date-time must be later than inital date-time.")
-            return
-        elif finalendepoch - initialstartepoch > 366 * 24 * 60 * 60:
-            self.gotinvalidtimerange.emit("You can only download data of maximum range of one year at a time.")
+        invalidtimerangemessage = self.got_invalid_time_range(initialstartepoch, finalendepoch)
+        if invalidtimerangemessage:
+            self.gotinvalidtimerange.emit(invalidtimerangemessage)
             return
 
         self.connectedtoapi.emit(await self.connected_to_api())
