@@ -5,10 +5,14 @@ is retrieved from the Deriv API and sent to a local database.
 
 from datetime import datetime
 import asyncio
+
+import deriv_api
+
 from .databasemanager import DatabaseManager
 from PyQt5.QtCore import QObject, pyqtSignal
 from .apiconnector import APIConnector
 import socket
+from time import sleep
 
 class DataCollector(QObject):
     finished = pyqtSignal()
@@ -83,11 +87,24 @@ class DataCollector(QObject):
         mainstartepoch = initialstartepoch
 
         while mainstartepoch < finalendepoch:
-            startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
-            tasks = [self.apiconnector.ticks_history(startepoch, self.duration, self.asset) for
-                     startepoch in startepochs]
+            # response = await self.apiconnector.apiconnection.ping()
+            # print(response)
 
-            results = await asyncio.gather(*tasks)
+            startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
+
+            results = None
+            while not results:
+                try:
+                    tasks = [self.apiconnector.ticks_history(startepoch, self.duration, self.asset) for
+                             startepoch in startepochs]
+                    async with asyncio.timeout(10):
+                        results = await asyncio.gather(*tasks)
+                except deriv_api.ResponseError:
+                    print("It's just a response error")
+                    sleep(10)
+                except Exception as e:
+                    print(e, "\nFor data at", datetime.fromtimestamp(mainstartepoch))
+                    raise
 
             times = []
             prices = []
