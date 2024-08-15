@@ -19,13 +19,13 @@ class DatabaseManager:
         """
 
         async with connect(self.dbfilepath) as con:
-            await con.execute("""DROP TABLE IF EXISTS {}""".format(self.pair))
+            await con.execute("""DROP TABLE IF EXISTS data""")
             await con.execute("""
-                CREATE TABLE IF NOT EXISTS {}(
+                CREATE TABLE IF NOT EXISTS data (
                     epoch INTEGER,
                     average REAL
                 )
-            """.format(self.pair))
+            """)
 
             await con.commit()
 
@@ -41,9 +41,9 @@ class DatabaseManager:
 
         async with connect(self.dbfilepath) as con:
             await con.executemany("""
-                INSERT INTO {}
+                INSERT INTO data
                 VALUES (?,?)
-            """.format(self.pair), data)
+            """, data)
 
             await con.commit()
 

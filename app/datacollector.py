@@ -87,9 +87,6 @@ class DataCollector(QObject):
         mainstartepoch = initialstartepoch
 
         while mainstartepoch < finalendepoch:
-            # response = await self.apiconnector.apiconnection.ping()
-            # print(response)
-
             startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
 
             results = None
