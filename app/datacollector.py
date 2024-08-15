@@ -100,7 +100,7 @@ class DataCollector(QObject):
                     print("It's just a response error")
                     sleep(10)
                 except Exception as e:
-                    print(e, "\nFor data at", datetime.fromtimestamp(mainstartepoch))
+                    print(type(e).__name__, "\nFor data at", datetime.fromtimestamp(mainstartepoch))
                     raise
 
             times = []
