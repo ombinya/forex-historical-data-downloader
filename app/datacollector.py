@@ -14,6 +14,7 @@ from .apiconnector import APIConnector
 import socket
 from time import sleep
 
+
 class DataCollector(QObject):
     finished = pyqtSignal()
     connectedtoapi = pyqtSignal(bool)
@@ -40,6 +41,7 @@ class DataCollector(QObject):
         datetimestring = currentdatetime.strftime(datetimeformat)
         dbfilename = self.asset + "_" + datetimestring + ".db"
         self.databasemanager = DatabaseManager(dbfilename, self.asset)
+        self.percentagedownloaded = 0
 
     def run(self):
         asyncio.run(self.collect_data())
@@ -75,7 +77,8 @@ class DataCollector(QObject):
         initialstartepoch = int(self.startdatetime.timestamp())
         finalendepoch = int(self.enddatetime.timestamp())
 
-        invalidtimerangemessage = self.got_invalid_time_range(initialstartepoch, finalendepoch)
+        invalidtimerangemessage = self.got_invalid_time_range(
+            initialstartepoch, finalendepoch)
 
         if invalidtimerangemessage:
             self.gotinvalidtimerange.emit(invalidtimerangemessage)
@@ -87,7 +90,8 @@ class DataCollector(QObject):
         mainstartepoch = initialstartepoch
 
         while mainstartepoch < finalendepoch:
-            startepochs = [mainstartepoch + (i * self.duration) for i in range(self.processes)]
+            startepochs = [mainstartepoch +
+                           (i * self.duration) for i in range(self.processes)]
 
             results = None
             while not results:
@@ -99,8 +103,14 @@ class DataCollector(QObject):
                 except deriv_api.ResponseError:
                     print("It's just a response error")
                     sleep(10)
+                except TimeoutError:
+                    print("Timeout error!")
+                    print("Percentage downloaded:", self.percentagedownloaded)
+                    sleep(5)
+                    print("Retrying...")
                 except Exception as e:
-                    print(type(e).__name__, "\nFor data at", datetime.fromtimestamp(mainstartepoch))
+                    print(type(e).__name__, "\nFor data at",
+                          datetime.fromtimestamp(mainstartepoch))
                     raise
 
             times = []
@@ -110,8 +120,9 @@ class DataCollector(QObject):
                 currenttimes = result["history"]["times"]
                 currentprices = result["history"]["prices"]
                 if len(currenttimes) > 0 and currenttimes[-1] > finalendepoch:
-                    currenttimes = [epoch for epoch in currenttimes if epoch <= finalendepoch]
-                    currentprices = currentprices[ : len(currenttimes)]
+                    currenttimes = [
+                        epoch for epoch in currenttimes if epoch <= finalendepoch]
+                    currentprices = currentprices[: len(currenttimes)]
 
                 times.extend(currenttimes)
                 prices.extend(currentprices)
@@ -119,10 +130,10 @@ class DataCollector(QObject):
             if len(times) > 0:
                 data = zip(times, prices)
                 await self.databasemanager.insert_data(data)
-                percentagedownloaded = ((times[-1] - initialstartepoch) / \
-                             (finalendepoch - initialstartepoch)) * 100
+                self.percentagedownloaded = ((times[-1] - initialstartepoch) /
+                                             (finalendepoch - initialstartepoch)) * 100
 
-                self.senttodb.emit(int(percentagedownloaded))
+                self.senttodb.emit(int(self.percentagedownloaded))
 
             mainstartepoch = mainstartepoch + (self.duration * self.processes)
 
